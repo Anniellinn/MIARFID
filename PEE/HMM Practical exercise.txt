@@ -1,0 +1,93 @@
+0.220 ..... 000 00 000 computer probabilidad de etiquetar esa etiqueta en cada estado, el estado anterior a la etiqueta es el ultimo y asi progresivamente
+
+- cada linea es una cadena 
+------
+wc trainHMMM 216 cadenas # me dice el numero de cadenas del train 
+wc testHMM 2 muestras 25 195 test HMM 
+
+Los estados van a ser el campo de la cita bibliográfica (title, autor, booktittle, year...) pero luego en test pueden aber palabras de cada estado que no se hayan visto 
+
+more nameStates --> muestra los identificadores d los estados y su 
+--> descripcion
+ 
+m0 es modelo 0, .dot es una herramienta que crea grafos: digraph hmm {tnkfit=lr: NODES 0 1 7 0 --> 0 label0.8363 
+
+
+----
+CREAR GRAFO DE UN MODELO con .dot --> recuerda instalar el dot antes
+
+./hmm2dot.sh m0 > m0.dot ## creo un grafo, con el dot puedo eliminar los nodos no utiles... 
+dot -Tpdf m0.dot -0 m0.pdf #lo guardo a pdf
+xpdf m0.pdf  # abro el pdf
+
+./hmm2dotWithLabels.sh tTh [statesLabels] ## ahora es hago el mismo grafo pero con labels
+
+./hmm2dotWithLabels.sh m0 0.01 nameStates > m0.dot
+dot -Tpdf m0.dot -o m0.pdf
+xpdf 
+
+-----
+hmml --> herramienta para entrenar
+	[-l sZ] por si queremos filtrar por longitud 
+
+hmm -i m0 -S trainHMM -o m1 -I 3 -s 0.00001 # suavizado para que las probs que son nulas no sean nulas 
+-1.287600 .. e+0.2 215 
+-1.36763 
+
+puedo pintar ahora esto --> -/hmm2dot.sh1 >m1.dot
+dot -Tpdf m1.dot -0 m1.pdf
+xpdf m1.pdf
+
+hmml-i m1 -S testHMM -D 
+---------------------------
+
+interpretacion: despues del @ viene del estado en el que se ha reconocido-->  R. @0 zens@0 -> cadena se reconoce en el estado 1 
+Translation@1
+
+----------
+Las palabras que  no estan en el vocab las sustituyo por UNK hago el parsing y las vuelvo a poner en su sitio
+
+resolver problema de error: tail -1 trainHMM > testHMM --> coge solo 1 linea del training 
+
+question1 decir que cd es 0 son los autores, que cuando es 1 es el titlo, y asi con todo lo del text --> asi podemos reconstruir la cita en el fromato bib para escribirlo a mano: @inprocesing... 
+			{..{
+				}}
+Leyendo la salida del test en la q aparecen los @ ___(actegoria)@estado pues ponerlo en formato bib 
+
+Question 3 --> dibujar los 2 modelos inicial y final para ver como camba la estructura
+
+1.0 0.0 0.0 # prob de que un estado sea inicial 
+0.2 0.5 0.3 0.0. # transicion de 0-0 0-1 0-2.. 
+... 
+... 
+0.0 0.3 1.0 0.0 a # probabilidades de transición 
+
+Question 4:
+	1 ./preparebib ... 
+		less refs.bib: a partir de la info construyo un modelo inicial 
+		less -l t | head # para ver los ficheros que va creando
+	2. invoco a create map file que crea el fichero de mapeo
+		more TabLabels # mapeo para las palbras de salida, para poder construir el vocabulario 
+	3. preparo el modelo inicial 
+		less train #lo deja preparado Hoefer Carl... 9 2016 --> lo deja en formato cita (quita los estados) 
+		head -2 train # devuelve la 1ª cita -->Determinism 2016
+	4. crea el modelo grande 
+		-less -S train # HMM 20 , primera linea prob de estado ini , luego son transiciones
+	5. una vez tengo el modelo, estimo 
+		-9.38620+e01 1909 # 1909 es el numero de muestras para entrenar, si el num de muestras es más pequeño el numero de muestras total esque no ha podido coger algunas (estan en blanco) 
+		-9.22025
+		... 
+
+	6. 
+
+Question 5 : es cuando el UNK tiene que entrar en acción
+
+Question 6 : definir un método de evaluación--> como evaluar esto? si es correcto o no? DISTANCIA DE EDICION
+
+	
+
+
+
+
+
+
